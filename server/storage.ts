@@ -1,4 +1,4 @@
-import { db } from "./db";
+import { getDb } from "./db";
 import {
   portfolioItems,
   socialLinks,
@@ -18,19 +18,23 @@ export interface IStorage {
 
 export class DatabaseStorage implements IStorage {
   async getPortfolioItems(): Promise<PortfolioItem[]> {
+    const db = getDb();
     return await db.select().from(portfolioItems);
   }
 
   async getSocialLinks(): Promise<SocialLink[]> {
+    const db = getDb();
     return await db.select().from(socialLinks);
   }
 
   async createPortfolioItem(item: InsertPortfolioItem): Promise<PortfolioItem> {
+    const db = getDb();
     const [newItem] = await db.insert(portfolioItems).values(item).returning();
     return newItem;
   }
 
   async createSocialLink(link: InsertSocialLink): Promise<SocialLink> {
+    const db = getDb();
     const [newLink] = await db.insert(socialLinks).values(link).returning();
     return newLink;
   }
