@@ -1,38 +1,39 @@
-import { type User, type InsertUser } from "@shared/schema";
-import { randomUUID } from "crypto";
-
-// modify the interface with any CRUD methods
-// you might need
+import { db } from "./db";
+import {
+  portfolioItems,
+  socialLinks,
+  type PortfolioItem,
+  type InsertPortfolioItem,
+  type SocialLink,
+  type InsertSocialLink
+} from "@shared/schema";
 
 export interface IStorage {
-  getUser(id: string): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
+  getPortfolioItems(): Promise<PortfolioItem[]>;
+  getSocialLinks(): Promise<SocialLink[]>;
+  // Add seed methods if needed, or just insert directly in seed function
+  createPortfolioItem(item: InsertPortfolioItem): Promise<PortfolioItem>;
+  createSocialLink(link: InsertSocialLink): Promise<SocialLink>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<string, User>;
-
-  constructor() {
-    this.users = new Map();
+export class DatabaseStorage implements IStorage {
+  async getPortfolioItems(): Promise<PortfolioItem[]> {
+    return await db.select().from(portfolioItems);
   }
 
-  async getUser(id: string): Promise<User | undefined> {
-    return this.users.get(id);
+  async getSocialLinks(): Promise<SocialLink[]> {
+    return await db.select().from(socialLinks);
   }
 
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+  async createPortfolioItem(item: InsertPortfolioItem): Promise<PortfolioItem> {
+    const [newItem] = await db.insert(portfolioItems).values(item).returning();
+    return newItem;
   }
 
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const id = randomUUID();
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
-    return user;
+  async createSocialLink(link: InsertSocialLink): Promise<SocialLink> {
+    const [newLink] = await db.insert(socialLinks).values(link).returning();
+    return newLink;
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();

@@ -1,5 +1,5 @@
 import express, { type Request, Response, NextFunction } from "express";
-import { registerRoutes } from "./routes";
+import { registerRoutes, seedDatabase } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
 
@@ -61,6 +61,14 @@ app.use((req, res, next) => {
 
 (async () => {
   await registerRoutes(httpServer, app);
+  
+  // Seed the database
+  try {
+    await seedDatabase();
+    log("Database seeded successfully");
+  } catch (error) {
+    console.error("Error seeding database:", error);
+  }
 
   app.use((err: any, _req: Request, res: Response, next: NextFunction) => {
     const status = err.status || err.statusCode || 500;

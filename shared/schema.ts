@@ -1,18 +1,28 @@
-import { sql } from "drizzle-orm";
-import { pgTable, text, varchar } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, varchar } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-export const users = pgTable("users", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
+export const portfolioItems = pgTable("portfolio_items", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  category: text("category").notNull(), // 'Gaming Content', 'Community Project', 'Creative Identity'
+  imageUrl: text("image_url").notNull(),
+  link: text("link"),
 });
 
-export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
+export const socialLinks = pgTable("social_links", {
+  id: serial("id").primaryKey(),
+  platform: text("platform").notNull(), // 'Facebook', 'Discord', 'YouTube'
+  url: text("url").notNull(),
+  label: text("label").notNull(),
 });
 
-export type InsertUser = z.infer<typeof insertUserSchema>;
-export type User = typeof users.$inferSelect;
+export const insertPortfolioItemSchema = createInsertSchema(portfolioItems);
+export const insertSocialLinkSchema = createInsertSchema(socialLinks);
+
+export type PortfolioItem = typeof portfolioItems.$inferSelect;
+export type InsertPortfolioItem = z.infer<typeof insertPortfolioItemSchema>;
+
+export type SocialLink = typeof socialLinks.$inferSelect;
+export type InsertSocialLink = z.infer<typeof insertSocialLinkSchema>;
